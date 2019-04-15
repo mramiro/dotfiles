@@ -1,0 +1,1 @@
+/Users/mramiro/.byobu/mouse_enable.tmux

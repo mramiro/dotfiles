@@ -1,0 +1,1 @@
+/Users/mramiro/.config/nvim/init.vim
