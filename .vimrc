@@ -69,12 +69,16 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } | Plug 'junegu
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'powerline/powerline-fonts', { 'do': './install.sh' }
-Plug 'nelsyeung/twig.vim'
-Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
 Plug 'groenewege/vim-less', { 'for': 'less' }
-Plug 'pedrohdz/vim-yaml-folds'
 Plug 'janko-m/vim-test'
 Plug 'machakann/vim-highlightedyank'
+
+" Languague support
+Plug 'nelsyeung/twig.vim'
+Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
+Plug 'pedrohdz/vim-yaml-folds'
+Plug 'PProvost/vim-ps1'
+
 if has('nvim')
   Plug 'w0rp/ale'
   let g:ale_sign_column_always = 1
