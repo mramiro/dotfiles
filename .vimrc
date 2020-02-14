@@ -9,6 +9,7 @@ set showcmd
 set updatetime=500
 set number
 set listchars=tab:▸\ ,eol:¬,space:·
+set clipboard=unnamedplus
 
 function! ToggleMouse()
   if !exists("s:old_mouse")
