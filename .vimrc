@@ -10,6 +10,7 @@ set updatetime=500
 set number
 set listchars=tab:▸\ ,eol:¬,space:·
 set clipboard=unnamedplus
+set shell=sh
 
 function! ToggleMouse()
   if !exists("s:old_mouse")
@@ -79,6 +80,7 @@ Plug 'nelsyeung/twig.vim'
 Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
 Plug 'pedrohdz/vim-yaml-folds'
 Plug 'PProvost/vim-ps1'
+Plug 'dag/vim-fish'
 
 if has('nvim')
   Plug 'w0rp/ale'
