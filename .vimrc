@@ -181,3 +181,8 @@ function! PreventBuffersInNERDTree()
   if exists('g:launching_fzf') | unlet g:launching_fzf | endif
 endfunction
 " autocmd BufEnter * if bufname('#') =~ 'NERD_tree' && bufname('%') !~ 'NERD_tree' && winnr('$') > 1 | b# | exe "normal! \<c-w>\<c-w>" | :blast | endif
+
+function! JsonFormat(spaces)
+  execute "%!jq --indent " . a:spaces . " ."
+endfunction
+noremap <Leader>jf :call JsonFormat(2)<CR>
