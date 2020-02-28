@@ -138,12 +138,12 @@ noremap <C-K> :bprev<CR>
 noremap <leader>i :set list!<CR>
 nnoremap <esc><esc> :noh<CR>
 nmap <silent> <leader>t :TestNearest<CR>
-nmap <silent> <leader>T :TestFile<CR>
-nmap <silent> <leader>a :TestSuite<CR>
-nmap <silent> <leader>l :TestLast<CR>
-nmap <silent> <leader>g :TestVisit<CR>
+nmap <silent> <leader>tf :TestFile<CR>
+nmap <silent> <leader>ta :TestSuite<CR>
+nmap <silent> <leader>tl :TestLast<CR>
+nmap <silent> <leader>tg :TestVisit<CR>
 map <leader>m :call ToggleMouse()<CR>
-map <leader>n :NumbersToggle<CR>
+map <leader>ln :NumbersToggle<CR>
 
 "let g:fzf_nvim_statusline = 0
 nnoremap <silent> <C-P> :Files<CR>
