@@ -1,0 +1,25 @@
+{
+  "name": "hearth",
+  "version": "0.0.1",
+  "description": "Home is where the 🔥 is",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mramiro/dotfiles.git"
+  },
+  "author": "Miguel Ramiro",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mramiro/dotfiles/issues"
+  },
+  "homepage": "https://github.com/mramiro/dotfiles#readme",
+  "dependencies": {
+    "jsonc-parser": "^2.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.1.0"
+  }
+}
