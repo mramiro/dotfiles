@@ -3,6 +3,7 @@ set tabstop=4
 set softtabstop=4
 set shiftwidth=4
 set expandtab
+set smarttab
 set hidden
 set mouse=a
 set showcmd
@@ -11,6 +12,7 @@ set number
 set listchars=tab:▸\ ,eol:¬,space:·
 set clipboard=unnamedplus
 set shell=sh
+set foldmethod=syntax
 
 function! ToggleMouse()
   if !exists("s:old_mouse")
@@ -78,6 +80,7 @@ Plug 'machakann/vim-highlightedyank'
 " Languague support
 Plug 'nelsyeung/twig.vim'
 Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
+Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'pedrohdz/vim-yaml-folds'
 Plug 'PProvost/vim-ps1'
 Plug 'dag/vim-fish'
