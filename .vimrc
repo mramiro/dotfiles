@@ -55,6 +55,7 @@ call plug#begin(s:data_root . '/plugged')
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-abolish'
 Plug 'tommcdo/vim-fubitive' "Bitbucket support for fugitive
 "Plug 'xolox/vim-session' | Plug 'xolox/vim-misc'
 Plug 'mhinz/vim-startify'
