@@ -151,8 +151,9 @@ map <leader>ln :NumbersToggle<CR>
 
 "let g:fzf_nvim_statusline = 0
 nnoremap <silent> <C-P> :Files<CR>
+let $FZF_DEFAULT_COMMAND = 'ag -g ""'
 
-" NERDCommenter"
+" NERDCommenter
 let g:NERDDefaultAlign = 'left'
 let g:NERDSpaceDelims = 1
 let g:NERDCompactSexyComs = 1
