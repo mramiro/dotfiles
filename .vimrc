@@ -141,6 +141,8 @@ noremap <C-J> :bnext<CR>
 noremap <C-K> :bprev<CR>
 noremap <leader>i :set list!<CR>
 nnoremap <esc><esc> :noh<CR>
+nmap yp :let @+ = expand("%")<CR>
+nmap yP :let @+ = expand("%:p")<CR>
 nmap <silent> <leader>t :TestNearest<CR>
 nmap <silent> <leader>tf :TestFile<CR>
 nmap <silent> <leader>ta :TestSuite<CR>
