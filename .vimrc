@@ -11,7 +11,7 @@ set updatetime=500
 set number
 set listchars=tab:▸\ ,eol:¬,space:·
 set clipboard=unnamedplus
-set shell=sh
+set shell=bash
 set foldmethod=syntax
 
 function! ToggleMouse()
