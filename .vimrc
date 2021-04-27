@@ -13,6 +13,7 @@ set listchars=tab:▸\ ,eol:¬,space:·
 set clipboard=unnamedplus
 set shell=bash
 set foldmethod=syntax
+set foldlevelstart=10
 
 function! ToggleMouse()
   if !exists("s:old_mouse")

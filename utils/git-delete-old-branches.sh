@@ -91,7 +91,7 @@ if test $include_remotes = true; then
   git pull
   log "Pruning stale branches in remotes..."
   for remote in $(git remote); do
-    exec_cmd "git prune $remote" $dry_run
+    exec_cmd "git remote prune $remote" $dry_run
   done
   log "Deleting remote branches already merged to $current_branch..."
   branches=$(git branch --remotes --merged | sed "/origin\\/HEAD/d;/origin\\/$current_branch/d")
@@ -101,6 +101,6 @@ if test $include_remotes = true; then
     if test -n "$filter" && ! echo $branch_name | grep -E "$filter" 1>/dev/null; then
       continue
     fi
-    exec_cmd "git push --delete $remote $branch" $dry_run
+    exec_cmd "git push --delete $remote $branch_name" $dry_run
   done
 fi
