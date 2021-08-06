@@ -194,3 +194,6 @@ function! JsonFormat(spaces)
   execute "%!jq --indent " . a:spaces . " ."
 endfunction
 noremap <Leader>jf :call JsonFormat(2)<CR>
+
+" [QZ]MK
+au BufReadPost *.keymap set syntax=c
