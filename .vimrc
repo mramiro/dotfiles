@@ -195,5 +195,7 @@ function! JsonFormat(spaces)
 endfunction
 noremap <Leader>jf :call JsonFormat(2)<CR>
 
-" [QZ]MK
-au BufReadPost *.keymap set syntax=c
+" Syntax highlighting for weird files
+autocmd BufReadPost *.ipynb set syntax=json " Synapse Analytics notebooks
+autocmd BufReadPost *.bim set syntax=json " Analysis Services model files
+autocmd BufReadPost *.keymap set syntax=c " ZMK keymap files
