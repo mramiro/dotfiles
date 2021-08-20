@@ -193,9 +193,16 @@ endfunction
 function! JsonFormat(spaces)
   execute "%!jq --indent " . a:spaces . " ."
 endfunction
+function! JsonCompress()
+  execute "%!jq --compact-output ."
+endfunction
 noremap <Leader>jf :call JsonFormat(2)<CR>
+noremap <Leader>jF :call JsonCompress()<CR>
 
 " Syntax highlighting for weird files
 autocmd BufReadPost *.ipynb set syntax=json " Synapse Analytics notebooks
 autocmd BufReadPost *.bim set syntax=json " Analysis Services model files
 autocmd BufReadPost *.keymap set syntax=c " ZMK keymap files
+
+noremap J <Nop>
+noremap K <Nop>
