@@ -9,6 +9,10 @@ function Set-DotEnv() {
     )
 
     $content = Get-Content $Path -ErrorAction SilentlyContinue
+    if (-not $content) {
+      Write-Debug "No .env file found at $Path"
+      return
+    }
     Write-Debug "Parsed $Path"
 
     $content | ForEach-Object {
