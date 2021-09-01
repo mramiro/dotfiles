@@ -41,18 +41,21 @@ function Set-DotEnv() {
     }
 }
 
-function Get-CmdletAlias ($cmdletname) {
+function Get-CmdletAlias($cmdletname) {
   Get-Alias | Where-Object -FilterScript { $_.Definition -like "$cmdletname" } | Format-Table -Property Definition, Name -AutoSize
 }
 
 function Test-Elevated {
-  $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-  $principal = New-Object System.Security.Principal.WindowsPrincipal($identity)
-  $adminRole = [System.Security.Principal.WindowsBuiltInRole]::Administrator
-  return $principal.IsInRole($adminRole)
+  if ($IsWindows) {
+    $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object System.Security.Principal.WindowsPrincipal($identity)
+    $adminRole = [System.Security.Principal.WindowsBuiltInRole]::Administrator
+    return $principal.IsInRole($adminRole)
+  }
+  return (whoami) -eq "root"
 }
 
-function Resolve-Error ($ErrorRecord=$Error[0])
+function Resolve-Error($ErrorRecord=$Error[0])
 {
    $ErrorRecord | Format-List * -Force
    $ErrorRecord.InvocationInfo |Format-List *
@@ -62,26 +65,24 @@ function Resolve-Error ($ErrorRecord=$Error[0])
        $Exception |Format-List * -Force
    }
 }
-Set-Alias rver Resolve-Error
 
-$psReadlineArgs = @{
-    "EditMode" = "vi"
-    "BellStyle" = "None"
-    "ViModeIndicator" = "Cursor"
-    # "ViModeIndicator" = "Script"
-    # "ViModeChangeHandler" = {
-    #     if ($args[0] -eq 'Command') {
-    #         # Set the cursor to a blinking block.
-    #         Write-Host -NoNewLine "`e[1 q"
-    #     } else {
-    #         # Set the cursor to a blinking line.
-    #         Write-Host -NoNewLine "`e[5 q"
-    #     }
-    # }
+# Modules
+$installedModules = Get-InstalledModule | Select -ExpandProperty Name
+@(
+  "PSFzf"
+) | ForEach {
+  Write-Verbose "Checking if module $_ is installed."
+  if ($_ -notIn $installedModules) {
+    Write-Verbose "Installing module $_."
+    Install-Module -Name $_ -Scope CurrentUser -Force
+  }
 }
-Set-PSReadLineOption @psReadlineArgs
+Remove-Variable installedModules
+
+# Input settings
+Set-PSReadLineOption -EditMode vi -BellStyle None -ViModeIndicator Cursor
 Set-PSReadLineKeyHandler -Key Tab -Function Complete
+Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
 
-if (Get-Command "Set-PsFzfOption") {
-    Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
-}
+# Aliases
+Set-Alias rver Resolve-Error
