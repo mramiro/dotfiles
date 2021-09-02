@@ -82,22 +82,30 @@ function Resolve-Error($ErrorRecord=$Error[0])
 }
 
 # Modules
-$installedModules = Get-InstalledModule | Select -ExpandProperty Name
-@(
-  "PSFzf"
-) | ForEach {
-  Write-Verbose "Checking if module $_ is installed."
-  if ($_ -notIn $installedModules) {
-    Write-Verbose "Installing module $_."
-    Install-Module -Name $_ -Scope CurrentUser -Force
+function Install-UserModules() {
+  [CmdletBinding(SupportsShouldProcess=$true)]
+  param(
+    [Parameter(Mandatory=$false)][switch]$PassThru = $false
+  )
+  $installedModules = Get-InstalledModule | Select -ExpandProperty Name
+  @(
+    "PSFzf"
+  ) | ForEach {
+    Write-Verbose "Checking if module $_ is installed."
+    if ($_ -notIn $installedModules) {
+      Write-Verbose "Installing module $_."
+      if ($PSCmdlet.ShouldProcess("Install module $_")) {
+        $extraFlags = $PassThru ? @{"PassThru" = $true} : @{}
+        Install-Module -Name $_ -Scope CurrentUser -Force @extraFlags
+      }
+    }
   }
 }
-Remove-Variable installedModules
 
 # Input settings
 Set-PSReadLineOption -EditMode vi -BellStyle None -ViModeIndicator Cursor
 Set-PSReadLineKeyHandler -Key Tab -Function Complete
-Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+Set-PSFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r' -ErrorAction "Continue"
 
 # Aliases
 Set-Alias rver Resolve-Error
