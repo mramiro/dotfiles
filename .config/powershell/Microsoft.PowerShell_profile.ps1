@@ -1,48 +1,59 @@
 #!/usr/bin/env pwsh
 
-function Set-DotEnv() {
-    [CmdletBinding(SupportsShouldProcess=$true)]
-    param(
-        [Parameter(Mandatory=$false)][string]$Path = "./.env",
-        [Parameter(Mandatory=$false)][switch]$PassThru = $false,
-        [Parameter(Mandatory=$false)][ValidateSet("Process", "User", "Machine")]$Scope = "Process"
-    )
+function Get-DotEnv() {
+  param(
+    [Parameter(Mandatory=$false)][string]$Path = "./.env"
+  )
+  $content = Get-Content $Path -ErrorAction SilentlyContinue
+  if (-not $content) {
+    Write-Verbose "No .env file found at $Path"
+    return
+  }
+  Write-Verbose "Parsed $Path"
 
-    $content = Get-Content $Path -ErrorAction SilentlyContinue
-    if (-not $content) {
-      Write-Debug "No .env file found at $Path"
+  $variables = @{}
+  $content | ForEach-Object {
+    [string]$line = $_.Trim()
+    if ([string]::IsNullOrWhiteSpace($line)) {
+      Write-Verbose "Skipping empty line"
       return
     }
-    Write-Debug "Parsed $Path"
-
-    $content | ForEach-Object {
-        [string]$line = $_.Trim()
-        if ([string]::IsNullOrWhiteSpace($line)) {
-            Write-Debug "Skipping empty line"
-            return
-        }
-        if ($line.StartsWith("#")){
-            Write-Debug "Skipping comment: $line"
-            return
-        }
-
-        $key, $value = $line -split "=", 2 | ForEach { $_.Trim() }
-        if ($value -match '^"[^"]*"$') {
-            Write-Debug "Found double-quoted value: $value"
-            $value = $value.Trim('"')
-        } elseif ($value -match "^'[^']*'$") {
-            Write-Debug "Found single-quoted value: $value"
-            $value = $value.Trim("'")
-        }
-
-        if ($PSCmdlet.ShouldProcess("Environment variable $key", "Set value = $value")) {
-            [Environment]::SetEnvironmentVariable($key, $value, $Scope) | Out-Null
-        }
-
-        if ($PassThru) {
-            Write-Output @{ $key = $value }
-        }
+    if ($line.StartsWith("#")){
+      Write-Verbose "Skipping comment: $line"
+      return
     }
+
+    $key, $value = $line -split "=", 2 | ForEach { $_.Trim() }
+    if ($value -match '^"[^"]*"$') {
+      Write-Verbose "Found double-quoted value: $value"
+      $value = $value.Trim('"')
+    } elseif ($value -match "^'[^']*'$") {
+      Write-Verbose "Found single-quoted value: $value"
+      $value = $value.Trim("'")
+    }
+    $variables[$key] = $value
+  }
+  return $variables
+}
+
+function Set-DotEnv() {
+  [CmdletBinding(SupportsShouldProcess=$true)]
+  param(
+    [Parameter(Mandatory=$false)][string]$Path = "./.env",
+    [Parameter(Mandatory=$false)][switch]$PassThru = $false,
+    [Parameter(Mandatory=$false)][ValidateSet("Process", "User", "Machine")]$Scope = "Process"
+  )
+
+  $variables = Get-DotEnv $Path
+  foreach ($key in $variables.Keys) {
+    $value = $variables[$key]
+    if ($PSCmdlet.ShouldProcess("Environment variable $key", "Set value = $value")) {
+      [Environment]::SetEnvironmentVariable($key, $value, $Scope) | Out-Null
+    }
+  }
+  if ($PassThru) {
+    return $variables
+  }
 }
 
 function Get-CmdletAlias($cmdletname) {
