@@ -1,13 +1,10 @@
-INSTALL_DIR := "${HOME}/.local/bin"
 
-help:
-	@echo "Run make install to install utility scripts"
+whatif:
+	bash install.sh -n linux
 
 install:
-	@for i in $$(find "utils" -type f); do \
-		target_name=$$(basename $$i | sed 's/\.sh$$//'); \
-		dest="${INSTALL_DIR}/$$target_name"; \
-		echo "Copying to $$dest"; \
-		cp $$i $$dest; \
-	done
+	bash install.sh -f linux
+
+link:
+	bash install.sh -fs linux
 
