@@ -16,8 +16,17 @@ function InstallToWinFolder([System.IO.DirectoryInfo]$srcFolder) {
     }
     Write-Host "Copying file: $srcFile -> $targetPath"
     if ($PSCmdlet.ShouldProcess($targetPath, "Copy file $srcFile")) {
-      Copy-Item $srcFile $targetPath
+      Copy-Item $srcFile $targetPath -Force -Recurse
     }
+  }
+}
+
+if (!$IsWindows) {
+  if ($Force) {
+    Write-Warning "Running on non-windows OS"
+  } else {
+    Write-Error "This file is meant to run on Windows only. Use -Force to override"
+    exit 1
   }
 }
 
