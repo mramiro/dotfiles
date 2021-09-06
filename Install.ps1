@@ -7,12 +7,13 @@
 function InstallToWinFolder([System.IO.DirectoryInfo]$srcFolder) {
   # "MyDocuments", "LocalApplicationData", etc.
   $baseTargetFolder = [Environment]::GetFolderPath($srcFolder.BaseName)
-  Get-ChildItem -Recurse -File $srcFolder | ForEach {
+  Get-ChildItem -Recurse -File $srcFolder | ForEach-Object {
     $srcFile = $_
     $relPath = [System.IO.Path]::GetRelativePath($srcFolder, $srcFile)
     $targetPath = Join-Path $baseTargetFolder $relPath
     if (!$Force -and (Test-Path -Type Leaf -Path $targetPath)) {
       Write-Host "File exists. Skipping: $targetPath"
+      return
     }
     Write-Host "Copying file: $srcFile -> $targetPath"
     if ($PSCmdlet.ShouldProcess($targetPath, "Copy file $srcFile")) {
