@@ -49,7 +49,7 @@ function trim_string() {
 function exec_cmd() {
   cmd=${1:?"Missing argument: cmd"}
   dry_run=${2:-false}
-  if test $dry_run = true; then
+  if $dry_run; then
     log "[DRYRUN]: $cmd"
   else
     eval "$cmd"
@@ -86,7 +86,7 @@ for branch in $branches; do
   exec_cmd "git branch -d $branch" $dry_run
 done
 
-if test $include_remotes = true; then
+if $include_remotes; then
   log "Pulling latest changes into $current_branch"
   git pull
   log "Pruning stale branches in remotes..."
@@ -99,6 +99,9 @@ if test $include_remotes = true; then
     remote=$(trim_string $branch | cut -d / -f 1)
     branch_name=$(trim_string $branch | cut -d / -f 2-)
     if test -n "$filter" && ! echo $branch_name | grep -E "$filter" 1>/dev/null; then
+      continue
+    fi
+    if test "$branch_name" = "master" || test "$branch_name" = "main"; then
       continue
     fi
     exec_cmd "git push --delete $remote $branch_name" $dry_run

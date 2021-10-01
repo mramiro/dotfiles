@@ -109,3 +109,6 @@ Set-PSFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory
 
 # Aliases
 Set-Alias rver Resolve-Error
+Set-Alias getazc Get-AzContext
+Set-Alias setazc Set-AzContext
+Set-Alias selazc Select-AzContext
