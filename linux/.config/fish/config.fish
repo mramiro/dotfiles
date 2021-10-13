@@ -1,8 +1,9 @@
 # Fish config
 
 if not functions -q fisher
-    curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
-    fisher update
+  echo "fisher not found. Install with"
+  echo "curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher"
+  echo "fisher update"
 end
 
 if [ -f ~/.fzf.fish ]
