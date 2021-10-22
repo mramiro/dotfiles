@@ -70,15 +70,23 @@ function Test-Elevated {
   return (whoami) -eq "root"
 }
 
-function Resolve-Error($ErrorRecord=$Error[0])
-{
-   $ErrorRecord | Format-List * -Force
-   $ErrorRecord.InvocationInfo |Format-List *
-   $Exception = $ErrorRecord.Exception
-   for ($i = 0; $Exception; $i++, ($Exception = $Exception.InnerException))
-   {   “$i” * 80
-       $Exception |Format-List * -Force
-   }
+function Trace-Exception() {
+  param(
+    [Parameter(Mandatory=$false)]$Exception = $Error[0].Exception
+  )
+  while ($Exception) {
+    $Exception
+    $Exception = $Exception.InnerException
+  }
+}
+
+function Trace-Error() {
+  param(
+    [Parameter(Mandatory=$false)]$ErrorRecord = $Error[0]
+  )
+  $ErrorRecord | Format-List * -Force
+  $ErrorRecord.InvocationInfo | Format-List * -Force
+  Trace-Exception $ErrorRecord.Exception | Format-List * -Force
 }
 
 # Modules
@@ -102,13 +110,21 @@ function Install-UserModules() {
   }
 }
 
+function Get-AzContextFile() {
+  $settings = Get-AzContextAutosaveSetting
+  if ($settings.ContextDirectory -and $settings.ContextFile) {
+    return Join-Path $settings.ContextDirectory $settings.ContextFile
+  }
+  Write-Error "AzContext configuration file not defined"
+}
+
 # Input settings
 Set-PSReadLineOption -EditMode vi -BellStyle None -ViModeIndicator Cursor
 Set-PSReadLineKeyHandler -Key Tab -Function Complete
 Set-PSFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r' -ErrorAction "Continue"
 
 # Aliases
-Set-Alias rver Resolve-Error
-Set-Alias getazc Get-AzContext
-Set-Alias setazc Set-AzContext
-Set-Alias selazc Select-AzContext
+# Set-Alias rver Resolve-Error
+Set-Alias sazc Set-AzContext
+Set-Alias gazc Get-AzContext
+Set-Alias pazc Select-AzContext
