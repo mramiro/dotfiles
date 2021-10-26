@@ -124,7 +124,6 @@ Set-PSReadLineKeyHandler -Key Tab -Function Complete
 Set-PSFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r' -ErrorAction "Continue"
 
 # Aliases
-# Set-Alias rver Resolve-Error
-Set-Alias sazc Set-AzContext
-Set-Alias gazc Get-AzContext
-Set-Alias pazc Select-AzContext
+Set-Alias setazc Set-AzContext
+Set-Alias getazc Get-AzContext
+Set-Alias selazc Select-AzContext
