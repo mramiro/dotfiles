@@ -56,6 +56,10 @@ function Set-DotEnv() {
   }
 }
 
+function Assert-Guid([string]$string) {
+    return $string -match "(?i)^[0-9A-F]{8}[-]?(?:[0-9A-F]{4}[-]?){3}[0-9A-F]{12}$"
+}
+
 function Get-CmdletAlias($cmdletname) {
   Get-Alias | Where-Object -FilterScript { $_.Definition -like "$cmdletname" } | Format-Table -Property Definition, Name -AutoSize
 }
