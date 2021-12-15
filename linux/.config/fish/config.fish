@@ -6,10 +6,6 @@ if not functions -q fisher
   echo "fisher update"
 end
 
-if [ -f ~/.fzf.fish ]
-    source ~/.fzf.fish
-end
-
 if uname -a | grep "Microsoft" > /dev/null
     set -x DISPLAY localhost:0.0
     set -x DOCKER_HOST tcp://localhost:2375
@@ -32,5 +28,12 @@ if test (umask) = "0000"
     umask 0022
 end
 
-fish_ssh_agent
+if [ -f ~/.fzf.fish ]
+    source ~/.fzf.fish
+end
+
+if functions -q fish_ssh_agent
+  fish_ssh_agent
+end
+
 fish_vi_key_bindings
