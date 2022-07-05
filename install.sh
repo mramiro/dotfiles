@@ -58,10 +58,10 @@ while IFS= read -r -d $'\0' leaf; do
   echo "$message: $targetFile -> $srcFile"
   if $shouldAct; then
     mkdir -p $(dirname "$targetFile")
-    if $symlink; then
+    if $symlinks; then
       ln -s "$srcFile" "$targetFile"
     else
       cp "$srcFile" "$targetFile"
     fi
   fi
-done < <(find $srcFolder -type f -print0)
+done < <(find -L $srcFolder -type f -print0)
