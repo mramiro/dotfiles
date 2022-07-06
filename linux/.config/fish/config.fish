@@ -40,3 +40,5 @@ if functions -q fish_ssh_agent
 end
 
 fish_vi_key_bindings
+
+set -x GCM_CREDENTIAL_STORE secretservice
