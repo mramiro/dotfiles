@@ -4,15 +4,17 @@
   [Parameter(Mandatory=$false)][Switch]$Force
 )
 
-  function ResolveSymlink([System.IO.FileInfo]$file) {
-    $contents = [Array](Get-Content $file)
-    if ($contents.Length -eq 1) {
-      $target = Join-Path $file.Directory $contents[0]
-      if (Test-Path -Type Leaf $target) {
-        return Get-Item $target
-      }
+$ErrorActionPreference = "Stop"
+
+function ResolveSymlink([System.IO.FileInfo]$file) {
+  $contents = [Array](Get-Content $file)
+  if ($contents.Length -eq 1) {
+    $target = Join-Path $file.Directory $contents[0]
+    if (Test-Path -Type Leaf $target) {
+      return Get-Item $target
     }
   }
+}
 
 function InstallToWinFolder([System.IO.DirectoryInfo]$srcFolder) {
   # "MyDocuments", "LocalApplicationData", etc.
@@ -29,7 +31,7 @@ function InstallToWinFolder([System.IO.DirectoryInfo]$srcFolder) {
     $linkedFile = ResolveSymlink $srcFile
     if ($linkedFile) {
       Write-Host "Source file $srcFile is symlink."
-        $srcFile = $linkedFile
+      $srcFile = $linkedFile
     }
     Write-Host "Copying file: $srcFile -> $targetPath"
     if ($PSCmdlet.ShouldProcess($targetPath, "Copy file $srcFile")) {
