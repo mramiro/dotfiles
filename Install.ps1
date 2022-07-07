@@ -22,7 +22,7 @@ function InstallToWinFolder([System.IO.DirectoryInfo]$srcFolder) {
   Get-ChildItem -Recurse -File $srcFolder | ForEach-Object {
     $srcFile = $_
     $relPath = [System.IO.Path]::GetRelativePath($srcFolder, $srcFile)
-    $targetPath = Join-Path $baseTargetFolder $relPath
+    $targetPath = [System.IO.FileInfo](Join-Path $baseTargetFolder $relPath)
     if (!$Force -and (Test-Path -Type Leaf -Path $targetPath)) {
       Write-Host "File exists. Skipping: $targetPath"
       return
@@ -35,6 +35,10 @@ function InstallToWinFolder([System.IO.DirectoryInfo]$srcFolder) {
     }
     Write-Host "Copying file: $srcFile -> $targetPath"
     if ($PSCmdlet.ShouldProcess($targetPath, "Copy file $srcFile")) {
+      if (-Not (Test-Path -Type Container -Path $targetPath.Directory)) {
+        Write-Host ("Directory {0} does not exist. Creating..." -f $targetPath.Directory)
+        New-Item -ItemType Directory -Force -Path $targetPath.Directory | Out-Null
+      }
       Copy-Item $srcFile $targetPath -Force -Recurse
     }
   }
