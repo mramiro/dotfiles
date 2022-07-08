@@ -23,7 +23,7 @@ function Get-DotEnv() {
       return
     }
 
-    $key, $value = $line -split "=", 2 | ForEach { $_.Trim() }
+    $key, $value = $line -split "=", 2 | ForEach-Object { $_.Trim() }
     if ($value -match '^"[^"]*"$') {
       Write-Verbose "Found double-quoted value: $value"
       $value = $value.Trim('"')
@@ -99,10 +99,10 @@ function Install-UserModules() {
   param(
     [Parameter(Mandatory=$false)][switch]$PassThru = $false
   )
-  $installedModules = Get-InstalledModule | Select -ExpandProperty Name
+  $installedModules = Get-InstalledModule | Select-Object -ExpandProperty Name
   @(
     "PSFzf"
-  ) | ForEach {
+  ) | ForEach-Object {
     Write-Verbose "Checking if module $_ is installed."
     if ($_ -notIn $installedModules) {
       Write-Verbose "Installing module $_."
@@ -122,10 +122,17 @@ function Get-AzContextFile() {
   Write-Error "AzContext configuration file not defined"
 }
 
+# PATH
+if (Test-Path -Type Container -Path "~/.local/bin") {
+  $Env:Path = "{0};{1}" -f $Env:Path, (Resolve-Path -Path "~/.local/bin")
+}
+
 # Input settings
 Set-PSReadLineOption -EditMode vi -BellStyle None -ViModeIndicator Cursor
 Set-PSReadLineKeyHandler -Key Tab -Function Complete
-Set-PSFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r' -ErrorAction "Continue"
+if ((Get-Command -Name "Set-PsFzfOption") -and (Get-Command -Name "fzf")) {
+  Set-PSFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r' -ErrorAction "Continue"
+}
 
 # Aliases
 Set-Alias setazc Set-AzContext

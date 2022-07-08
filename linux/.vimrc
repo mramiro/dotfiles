@@ -11,9 +11,18 @@ set updatetime=500
 set number
 set listchars=tab:▸\ ,eol:¬,space:·
 set clipboard=unnamedplus
-set shell=bash
 set foldmethod=syntax
 set foldlevelstart=10
+
+if has('win32')
+  let &shell = executable('pwsh') ? 'pwsh' : 'powershell'
+  let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
+  let &shellredir = '-RedirectStandardOutput %s -NoNewWindow -Wait'
+  let &shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
+  set shellquote= shellxquote=
+else
+  set shell=bash
+endif
 
 function! ToggleMouse()
   if !exists("s:old_mouse")
@@ -32,7 +41,11 @@ endfunction
 
 if has('nvim')
   if empty($XDG_CONFIG_HOME)
-    let s:editor_root=expand('~/.config/nvim')
+    if has('win32')
+      let s:editor_root=expand('~/AppData/Local/nvim')
+    else
+      let s:editor_root=expand('~/.config/nvim')
+    endif
   else
     let s:editor_root=expand($XDG_CONFIG_HOME . '/nvim')
   endif
@@ -46,9 +59,16 @@ else
   let s:data_root=s:editor_root
 endif
 
-if empty(glob(s:editor_root . '/autoload/plug.vim'))
+let plug_path=s:editor_root . '/autoload/plug.vim'
+if empty(glob(plug_path))
   autocmd VimEnter * echom 'Downloading and installing vim-plug...'
-  silent execute '!curl -fLo ' . s:editor_root . '/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  let plug_url='https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  if has('win32')
+    silent execute '!New-Item -Type Directory -Force -Path ([System.IO.FileInfo]"' . plug_path . '").Directory'
+    silent execute '!Invoke-WebRequest -UseBasicParsing -Uri "' . plug_url . '" -OutFile "' . plug_path . '"'
+  else
+    silent execute '!curl -fLo ' . plug_path . ' --create-dirs ' . plug_url
+  endif
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 call plug#begin(s:data_root . '/plugged')
@@ -79,7 +99,7 @@ Plug 'groenewege/vim-less', { 'for': 'less' }
 Plug 'janko-m/vim-test'
 Plug 'machakann/vim-highlightedyank'
 
-" Languague support
+" Language support
 Plug 'nelsyeung/twig.vim'
 Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
 Plug 'elzr/vim-json', { 'for': 'json' }
