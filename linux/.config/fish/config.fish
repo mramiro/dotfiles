@@ -31,7 +31,7 @@ end
 # See https://github.com/dotnet/core/issues/7038#issuecomment-1110377345 and https://github.com/MicrosoftDocs/live-share/issues/4646#issuecomment-1134736154
 # Had to install all sdks using a shell script https://docs.microsoft.com/en-us/dotnet/core/install/linux-scripted-manual#scripted-install
 if test -d "$HOME/.dotnet"
-    set -x PATH "$PATH:$HOME/.dotnet"
+    set -x PATH "$HOME/.dotnet:$PATH"
 end
 
 if test (umask) = "0000"
