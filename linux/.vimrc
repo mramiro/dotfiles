@@ -11,8 +11,18 @@ set updatetime=500
 set number
 set listchars=tab:▸\ ,eol:¬,space:·
 set clipboard=unnamedplus
-set shell=sh
 set foldmethod=syntax
+set foldlevelstart=10
+
+if has('win32')
+  let &shell = executable('pwsh') ? 'pwsh' : 'powershell'
+  let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
+  let &shellredir = '-RedirectStandardOutput %s -NoNewWindow -Wait'
+  let &shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
+  set shellquote= shellxquote=
+else
+  set shell=bash
+endif
 
 function! ToggleMouse()
   if !exists("s:old_mouse")
@@ -31,7 +41,11 @@ endfunction
 
 if has('nvim')
   if empty($XDG_CONFIG_HOME)
-    let s:editor_root=expand('~/.config/nvim')
+    if has('win32')
+      let s:editor_root=expand('~/AppData/Local/nvim')
+    else
+      let s:editor_root=expand('~/.config/nvim')
+    endif
   else
     let s:editor_root=expand($XDG_CONFIG_HOME . '/nvim')
   endif
@@ -45,9 +59,16 @@ else
   let s:data_root=s:editor_root
 endif
 
-if empty(glob(s:editor_root . '/autoload/plug.vim'))
+let plug_path=s:editor_root . '/autoload/plug.vim'
+if empty(glob(plug_path))
   autocmd VimEnter * echom 'Downloading and installing vim-plug...'
-  silent execute '!curl -fLo ' . s:editor_root . '/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  let plug_url='https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  if has('win32')
+    silent execute '!New-Item -Type Directory -Force -Path ([System.IO.FileInfo]"' . plug_path . '").Directory'
+    silent execute '!Invoke-WebRequest -UseBasicParsing -Uri "' . plug_url . '" -OutFile "' . plug_path . '"'
+  else
+    silent execute '!curl -fLo ' . plug_path . ' --create-dirs ' . plug_url
+  endif
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 call plug#begin(s:data_root . '/plugged')
@@ -55,6 +76,7 @@ call plug#begin(s:data_root . '/plugged')
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-abolish'
 Plug 'tommcdo/vim-fubitive' "Bitbucket support for fugitive
 "Plug 'xolox/vim-session' | Plug 'xolox/vim-misc'
 Plug 'mhinz/vim-startify'
@@ -65,9 +87,9 @@ Plug 'myusuf3/numbers.vim'
 Plug 'bronson/vim-visual-star-search'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'Chiel92/vim-autoformat'
-Plug 'chriskempson/base16-vim'
-Plug 'scrooloose/nerdtree', { 'on': ['NERDTree', 'NERDTreeToggle', 'NERDTreeFind'] } | Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'scrooloose/nerdcommenter'
+Plug 'base16-project/base16-vim'
+Plug 'preservim/nerdtree', { 'on': ['NERDTree', 'NERDTreeToggle', 'NERDTreeFind'] } | Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'preservim/nerdcommenter'
 "Plug 'junegunn/vim-slash'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } | Plug 'junegunn/fzf.vim'
 Plug 'vim-airline/vim-airline'
@@ -77,7 +99,7 @@ Plug 'groenewege/vim-less', { 'for': 'less' }
 Plug 'janko-m/vim-test'
 Plug 'machakann/vim-highlightedyank'
 
-" Languague support
+" Language support
 Plug 'nelsyeung/twig.vim'
 Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
 Plug 'elzr/vim-json', { 'for': 'json' }
@@ -140,6 +162,8 @@ noremap <C-J> :bnext<CR>
 noremap <C-K> :bprev<CR>
 noremap <leader>i :set list!<CR>
 nnoremap <esc><esc> :noh<CR>
+nmap yp :let @+ = expand("%")<CR>
+nmap yP :let @+ = expand("%:p")<CR>
 nmap <silent> <leader>t :TestNearest<CR>
 nmap <silent> <leader>tf :TestFile<CR>
 nmap <silent> <leader>ta :TestSuite<CR>
@@ -150,8 +174,9 @@ map <leader>ln :NumbersToggle<CR>
 
 "let g:fzf_nvim_statusline = 0
 nnoremap <silent> <C-P> :Files<CR>
+let $FZF_DEFAULT_COMMAND = 'ag -g ""'
 
-" NERDCommenter"
+" NERDCommenter
 let g:NERDDefaultAlign = 'left'
 let g:NERDSpaceDelims = 1
 let g:NERDCompactSexyComs = 1
@@ -188,4 +213,16 @@ endfunction
 function! JsonFormat(spaces)
   execute "%!jq --indent " . a:spaces . " ."
 endfunction
+function! JsonCompress()
+  execute "%!jq --compact-output ."
+endfunction
 noremap <Leader>jf :call JsonFormat(2)<CR>
+noremap <Leader>jF :call JsonCompress()<CR>
+
+" Syntax highlighting for weird files
+autocmd BufReadPost *.ipynb set syntax=json " Synapse Analytics notebooks
+autocmd BufReadPost *.bim set syntax=json " Analysis Services model files
+autocmd BufReadPost *.keymap set syntax=c " ZMK keymap files
+
+noremap J <Nop>
+noremap K <Nop>

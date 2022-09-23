@@ -1,0 +1,45 @@
+{
+  "profiles": [
+    {
+      "updates": "{2c4de342-38b7-51cf-b940-2309a097f518}",
+      "tabTitle": "Ubuntu",
+      "suppressApplicationTitle": true,
+      "colorScheme": "Tomorrow Night",
+      "font": {
+        "face": "Cascadia Code PL",
+        "size": 11
+      },
+      "padding": "5, 5, 5, 5"
+    },
+    {
+      "updates": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+      "tabTitle": "PowerShell Core",
+      "colorScheme": "One Half Dark"
+    }
+  ],
+  "schemes": [
+    {
+      "name": "Tomorrow Night",
+      "background": "#1D1F21",
+      "black": "#1D1F21",
+      "blue": "#81A2BE",
+      "brightBlack": "#969896",
+      "brightBlue": "#81A2BE",
+      "brightCyan": "#8ABEB7",
+      "brightGreen": "#B5BD68",
+      "brightPurple": "#B294BB",
+      "brightRed": "#CC6666",
+      "brightWhite": "#FFFFFF",
+      "brightYellow": "#F0C674",
+      "cursorColor": "#FFFFFF",
+      "cyan": "#8ABEB7",
+      "foreground": "#C5C8C6",
+      "green": "#B5BD68",
+      "purple": "#B294BB",
+      "red": "#CC6666",
+      "selectionBackground": "#FFFFFF",
+      "white": "#C5C8C6",
+      "yellow": "#F0C674"
+    }
+  ]
+}
