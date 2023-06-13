@@ -171,6 +171,8 @@ nmap <silent> <leader>tl :TestLast<CR>
 nmap <silent> <leader>tg :TestVisit<CR>
 map <leader>m :call ToggleMouse()<CR>
 map <leader>ln :NumbersToggle<CR>
+nmap <C-_> <Plug>NERDCommenterToggle
+vmap <C-_> <Plug>NERDCommenterToggle<CR>gv
 
 "let g:fzf_nvim_statusline = 0
 nnoremap <silent> <C-P> :Files<CR>

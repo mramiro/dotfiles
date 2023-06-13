@@ -122,6 +122,23 @@ function Get-AzContextFile() {
   Write-Error "AzContext configuration file not defined"
 }
 
+function Get-DevModules {
+    Get-Module -All | Where-Object {
+        $_.ModuleType -eq [System.Management.Automation.ModuleType]::Script
+        -and
+        $null -eq $_.RepositorySourceLocation
+        -and
+        $_.Version -eq [System.Version]"0.0"
+     }
+}
+
+function Remove-DevModules {
+    Get-DevModules | ForEach-Object {
+        "Removing module {0}" -f $_ | Write-Verbose
+        Remove-Module $_
+    }
+}
+
 # PATH
 if (Test-Path -Type Container -Path "~/.local/bin") {
   $Env:Path = "{0};{1}" -f $Env:Path, (Resolve-Path -Path "~/.local/bin")

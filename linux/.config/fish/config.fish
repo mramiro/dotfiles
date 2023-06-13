@@ -27,12 +27,26 @@ if test -d "$HOME/.local/bin"
     set -x PATH "$HOME/.local/bin:$PATH"
 end
 
+if test -d "$HOME/.local/share/coursier/bin"
+    set -x PATH "$PATH:$HOME/.local/share/coursier/bin"
+end
+
 # dotnet installation is messed up in jammy (only dotnet6 is supported):
 # See https://github.com/dotnet/core/issues/7038#issuecomment-1110377345 and https://github.com/MicrosoftDocs/live-share/issues/4646#issuecomment-1134736154
 # Had to install all sdks using a shell script https://docs.microsoft.com/en-us/dotnet/core/install/linux-scripted-manual#scripted-install
-if test -d "$HOME/.dotnet"
-    set -x PATH "$HOME/.dotnet:$PATH"
-end
+# if test -d "$HOME/.dotnet"
+#     set -x PATH "$HOME/.dotnet:$PATH"
+# end
+
+set -x JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+
+# set -x HADOOP_HOME /opt/apache/hadoop-3.3.1
+# set -x HADOOP_CONF_DIR "$HADOOP_HOME/etc/hadoop"
+# set -x PATH "$PATH:$HADOOP_HOME/bin"
+
+# set -x SPARK_HOME /opt/apache/spark-3.1.2-bin-without-hadoop
+# set -x PATH "$PATH:$SPARK_HOME/bin"
+# set -x SPARK_DIST_CLASSPATH (hadoop classpath)
 
 if test (umask) = "0000"
     umask 0022
