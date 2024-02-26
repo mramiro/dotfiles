@@ -38,6 +38,10 @@ end
 #     set -x PATH "$HOME/.dotnet:$PATH"
 # end
 
+if test -d "$HOME/.dotnet/tools"
+    set -x PATH "$HOME/.dotnet/tools:$PATH"
+end
+
 set -x JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
 # set -x HADOOP_HOME /opt/apache/hadoop-3.3.1
@@ -63,3 +67,10 @@ end
 fish_vi_key_bindings
 
 set -x GCM_CREDENTIAL_STORE secretservice
+
+# >>> coursier install directory >>>
+set -gx PATH "$PATH:/home/miramiro/.local/share/coursier/bin"
+# <<< coursier install directory <<<
+
+# Homebrew
+eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
