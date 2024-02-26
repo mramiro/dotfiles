@@ -7,78 +7,107 @@ set -o pipefail
 self=$(echo $0 | sed 's|.*/||')
 
 function usage {
-  cat << EOF
+  readarray message << EOF
+    Analyzes one or more git repositories looking for any unreachable remotes. For each bad remote detected, prompts the user to provide a replacement URL.
 
-Analyzes one or more git repository looking for any unreachable remotes. For each bad remote detected, prompts the user to provide a replacement URL.
+    Usage: $self [option...]
 
-Usage: $self [option...] <path>
+    Options:
 
-Options:
+      -p, --path <path> The path to the git repository to analyze. If the -r option is provided, this should be a directory containing git repositories.
+                        Defaults to the current directory.
+      -r, --recurse     Recursively analyze all git repositories found within the provided path (up to one level of depth).
+      -f, --force       Prompt for remote URL replacement without checking for issues first.
+      -m, --rename      After replacing any remote URL in a repository, also atttempt to rename the folder that contains it, prompting with a suggestion based on the new URL.
+                        The URL is taken from the either the 'origin' remote (if it exists) or the first one that 'git remote' returns after all replacements are made.
+      -n, --dry-run     Perform a trial run without making any change.
+      -h, --help        Display this help message.
 
-  -m  After replacing any remote URL in a repository, also atttempt to rename the folder that contains it, prompting with a suggestion based on the new URL.
-      The URL is taken from the either the 'origin' remote (if it exists) or the first one that 'git remote' returns after all replacements are made.
-  -r  Recursively analyze all git repositories found within the provided path (up to one level of depth).
-  -f  Force replacement of remote URLs without checking for issues first.
-  -n  Dry run. Perform a trial run with no persistent changes made.
-  -h  Display this help message.
+    Examples:
 
-Arguments:
+      # Analyze the git repository in the current directory, prompting for a replacement URL on each unreachable remote.
+      $self
 
-  <path>  The path to the git repository to analyze. If the -r option is provided, this should be a directory containing git repositories.
+      # Sames as above, but just print the changes that would be made without actually making them.
+      $self -n
 
-Examples:
-
-  # Analyze a single repository, prompting for a replacement URL on each unreachable remote.
-  $self /path/to/repo
-
-  # Sames as above, but just print the changes that would be made without actually making them.
-  $self -n /path/to/repo
-
-  # Find all folders containing repositories within a directory and prompt for a replacement URL on each of their remotes,
-  # regardless of the remote status. Also prompt for a new name for each folder found.
-  $self -r -f -m /path/to/repo
-
+      # Find all folders containing repositories within a directory and prompt for a replacement URL on each of their remotes,
+      # regardless of the remote status. Also attempt to rename each folder found.
+      $self -r -p /path/to/repositories -f -m
 EOF
+  printf '%s' "${message[@]#    }"
+}
+
+function parse_args {
+  local args=$(getopt -o "p:rfmnh" -l "path:,recurse,force,rename,dry-run,help" -- "$@") || exit 1
+  eval "set -- $args"
+  while true; do
+    case $1 in
+      -p | --path)
+        TARGET_DIR=$2
+        shift 2 ;;
+      -r | --recurse)
+        RECURSE=true
+        shift ;;
+      -f | --force)
+        FORCE=true
+        shift ;;
+      -m | --rename)
+        MOVE_FOLDER=true
+        shift ;;
+      -n | --dry-run)
+        DRY_RUN=true
+        shift ;;
+      -h | --help)
+        usage
+        exit 0 ;;
+      --)
+        shift
+        break ;;
+      *)
+        exit 1
+    esac
+  done
 }
 
 function handle_url_replacement {
   local repo_root=$1
   local remote_name=$2
   local remote_url=$3
-  local entered_url
   read -p "Enter new URL for remote '$remote_name': " -e -i "$remote_url" entered_url
   local new_url=$(echo $entered_url | xargs)
   if [ -z $new_url ]; then
     echo "No URL entered. Skipping."
     return 1
-  else
-    if $DRY_RUN; then
-      echo "[DRYRUN] Skipping remote URL replacement to '$new_url'."
-    else
-      git -C $repo_root remote set-url $remote_name $new_url
-      echo "Remote '$remote_name' URL replaced with '$new_url'."
-    fi
-    return 0
   fi
+  if $DRY_RUN; then
+    echo "[DRYRUN] Skipping remote URL replacement to '$new_url'."
+  else
+    git -C $repo_root remote set-url $remote_name $new_url
+    echo "Remote '$remote_name' URL replaced with '$new_url'."
+  fi
+  return 0
 }
 
 function handle_folder_rename {
-  local repo_root=$1
+  local repo_root=$(realpath $1)
   local suggested_name=$2
-  local entered_repo_name
   read -p "Enter new folder name for this repository: " -e -i "$suggested_name" entered_repo_name
   local new_repo_name=$(echo $entered_repo_name | xargs)
-  if [ -z $new_repo_name ]; then
-    echo "No repository name entered. Skipping."
-  else
-    new_repo_path=$(dirname $repo_root)/$new_repo_name
-    if $DRY_RUN; then
-      echo "[DRYRUN] Skipping folder rename to '$new_repo_path'."
-    else
-      mv $repo_root $new_repo_path
-      echo "Repository folder renamed to '$new_repo_path'."
-    fi
+  local new_repo_path=$(dirname $repo_root)/$new_repo_name
+  if [ -z $new_repo_name ] || [ "$new_repo_path" = "$repo_root" ]; then
+    echo "No new repository name entered. Skipping."
+    return 0
   fi
+  if $DRY_RUN; then
+    echo "[DRYRUN] Skipping folder rename to '$new_repo_path'."
+    return 0
+  fi
+  if [ "$repo_root" = "$(pwd)" ]; then
+    cd ..
+  fi
+  mv $repo_root $new_repo_path
+  echo "Repository folder renamed to '$new_repo_path'."
 }
 
 function process_remote {
@@ -129,38 +158,15 @@ function process_repo {
   fi
 }
 
-
 MOVE_FOLDER=false
 RECURSE=false
 FORCE=false
 DRY_RUN=false
-while getopts "mrfnh" opt; do
-  case $opt in
-    m)
-      MOVE_FOLDER=true
-      ;;
-    r)
-      RECURSE=true
-      ;;
-    f)
-      FORCE=true
-      ;;
-    n)
-      DRY_RUN=true
-      ;;
-    h | *)
-      usage
-      exit 0
-      ;;
-  esac
-done
-shift $((OPTIND-1))
-if [ $# -eq 0 ]; then
-  usage
-  exit 1
-fi
+TARGET_DIR="."
 
-provided_path=$1
+parse_args $@
+
+provided_path=$TARGET_DIR
 if [ ! -d $provided_path ]; then
   echo "Directory '$provided_path' does not exist." 1>&2
   exit 1
