@@ -106,6 +106,7 @@ Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'pedrohdz/vim-yaml-folds'
 Plug 'PProvost/vim-ps1'
 Plug 'dag/vim-fish'
+Plug 'sukima/xmledit'
 
 if has('nvim')
   Plug 'w0rp/ale'
