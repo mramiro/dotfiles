@@ -28,7 +28,7 @@ if test -d "$HOME/.local/bin"
 end
 
 if test -d "$HOME/.local/share/coursier/bin"
-    set -x PATH "$PATH:$HOME/.local/share/coursier/bin"
+    set -x PATH "$HOME/.local/share/coursier/bin:$PATH"
 end
 
 # dotnet installation is messed up in jammy (only dotnet6 is supported):
@@ -40,6 +40,11 @@ end
 
 if test -d "$HOME/.dotnet/tools"
     set -x PATH "$HOME/.dotnet/tools:$PATH"
+end
+
+# Homebrew
+if [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 end
 
 set -x JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
@@ -67,10 +72,3 @@ end
 fish_vi_key_bindings
 
 set -x GCM_CREDENTIAL_STORE secretservice
-
-# >>> coursier install directory >>>
-set -gx PATH "$PATH:/home/miramiro/.local/share/coursier/bin"
-# <<< coursier install directory <<<
-
-# Homebrew
-eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
