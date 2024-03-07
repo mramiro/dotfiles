@@ -122,21 +122,45 @@ function Get-AzContextFile() {
   Write-Error "AzContext configuration file not defined"
 }
 
-function Get-DevModules {
-    Get-Module -All | Where-Object {
-        $_.ModuleType -eq [System.Management.Automation.ModuleType]::Script
-        -and
-        $null -eq $_.RepositorySourceLocation
-        -and
-        $_.Version -eq [System.Version]"0.0"
-     }
+function Get-DevModule {
+  param(
+    [Parameter(Mandatory=$false)]$Name = $null
+  )
+  $modules = if ($null -ne $Name) {
+    Get-Module -Name $Name
+  } else {
+    Get-Module
+  }
+  $modules | Where-Object {
+    $_.ModuleType -eq [System.Management.Automation.ModuleType]::Script `
+    -and $_.Guid.Guid -eq "00000000-0000-0000-0000-000000000000"
+  }
 }
 
-function Remove-DevModules {
-    Get-DevModules | ForEach-Object {
-        "Removing module {0}" -f $_ | Write-Verbose
-        Remove-Module $_
-    }
+function Remove-DevModule {
+  Get-DevModule | ForEach-Object {
+    "Removing module {0}" -f $_ | Write-Verbose
+    Remove-Module $_
+  }
+}
+
+function Sync-DevModule {
+  param(
+    [Parameter(Mandatory=$false)]$Module = $null
+  )
+  [Array]$modules = if ($null -eq $Module) {
+    Get-DevModule
+  } elseif ($Module -is [System.Management.Automation.PSModuleInfo]) {
+    $Module
+  } else {
+    Get-DevModule -Name $Module
+  }
+
+  $modules | ForEach-Object {
+    $modulePath = $_.Path
+    $_ | Remove-Module
+    Import-Module $modulePath
+  }
 }
 
 # PATH
