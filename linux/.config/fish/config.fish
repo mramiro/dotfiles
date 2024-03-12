@@ -43,7 +43,7 @@ if test -d "$HOME/.dotnet/tools"
 end
 
 # Homebrew
-if [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
+if [ -f /home/linuxbrew/.linuxbrew/bin/brew ]
   eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 end
 
