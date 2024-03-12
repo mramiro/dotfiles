@@ -1,8 +1,9 @@
 {
+  "defaultProfile": "{2c4de342-38b7-51cf-b940-2309a097f518}",
   "profiles": [
     {
       "updates": "{2c4de342-38b7-51cf-b940-2309a097f518}",
-      "tabTitle": "Ubuntu",
+      "name": "Ubuntu",
       "suppressApplicationTitle": true,
       "colorScheme": "Tomorrow Night",
       "font": {
@@ -13,8 +14,12 @@
     },
     {
       "updates": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
-      "tabTitle": "PowerShell Core",
-      "colorScheme": "One Half Dark"
+      "name": "PowerShell Core",
+      "colorScheme": "One Half Dark",
+      "font": {
+        "face": "Cascadia Mono",
+        "size": 11
+      }
     }
   ],
   "schemes": [
