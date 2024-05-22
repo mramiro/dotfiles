@@ -163,6 +163,47 @@ function Sync-DevModule {
   }
 }
 
+function Copy-Object {
+  param(
+    [Parameter(Mandatory,ValueFromPipeline)]$Object
+  )
+  # Shallow copy
+  $Object | Select-Object -Property *;
+  # [System.Management.Automation.PSSerializer]::Deserialize(
+  #   [System.Management.Automation.PSSerializer]::Serialize($Object)
+  # )
+}
+
+function Expand-Property {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)][String]$PropertyName,
+    [Parameter(Mandatory, ValueFromPipeline)]$Object,
+    [Parameter(Mandatory=$false)][Alias("epl")][String]$ExpandedPropertyListVariable
+  )
+  # TODO: Make this work for all primitives
+  if ($property -Is [String]) {
+    return $Object
+  }
+  $clone = Copy-Object $Object
+  $property = $clone.$PropertyName
+  $innerPropNames = if ($property -Is [System.Collections.IDictionary]) {
+    $property.get_Keys()
+  } else {
+    $property | Get-Member -Type Property | ForEach-Object { $_.Name }
+  }
+  $newNames = @()
+  foreach ($name in $innerPropNames) {
+    $newName = $PropertyName + "_" + $name
+    $clone | Add-Member -NotePropertyName $newName -NotePropertyValue $property.$name
+    $newNames = $newNames += $newName
+  }
+  if ($ExpandedPropertyListVariable) {
+    Set-Variable -Name $ExpandedPropertyListVariable -Value $newNames -Scope 1
+  }
+  $clone
+}
+
 # PATH
 if (Test-Path -Type Container -Path "~/.local/bin") {
   $Env:Path = "{0};{1}" -f $Env:Path, (Resolve-Path -Path "~/.local/bin")
