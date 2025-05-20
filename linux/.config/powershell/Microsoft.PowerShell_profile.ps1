@@ -129,7 +129,8 @@ function Get-DevModule {
   $modules = if ($null -ne $Name) {
     Get-Module -Name $Name
   } else {
-    Get-Module
+    # TODO: Recursive search here
+    Get-Module -All
   }
   $modules | Where-Object {
     $_.ModuleType -eq [System.Management.Automation.ModuleType]::Script `

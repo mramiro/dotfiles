@@ -87,7 +87,7 @@ Plug 'myusuf3/numbers.vim'
 Plug 'bronson/vim-visual-star-search'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'Chiel92/vim-autoformat'
-Plug 'base16-project/base16-vim'
+Plug 'tinted-theming/tinted-vim'
 Plug 'preservim/nerdtree', { 'on': ['NERDTree', 'NERDTreeToggle', 'NERDTreeFind'] } | Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'preservim/nerdcommenter'
 "Plug 'junegunn/vim-slash'
@@ -143,6 +143,7 @@ if has('termguicolors')
   set termguicolors
 else
   set t_Co=256
+  let tinted_colorspace=256
 endif
 colorscheme base16-tomorrow-night
 let g:airline_theme='base16_tomorrow'
