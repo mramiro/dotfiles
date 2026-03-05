@@ -1,0 +1,63 @@
+$schema: "1.0"
+name: "mramiro-dev-pc-image"
+image: microsoftvisualstudio_visualstudioplustools_vs-2022-ent-general-win11-m365-gen2
+tasks:
+  - name: winget
+    description: Install 7-Zip
+    parameters:
+      package: 7zip.7zip
+
+  - name: winget
+    description: Install Docker Desktop
+    parameters:
+      package: Docker.DockerDesktop
+
+  - name: winget
+    description: Install Git
+    parameters:
+      package: Git.Git
+
+  - name: winget
+    description: Install jq
+    parameters:
+      package: jqlang.jq
+
+  - name: winget
+    description: Install Azure CLI
+    parameters:
+      package: Microsoft.AzureCLI
+
+  - name: winget
+    description: Install Visual Studio Code
+    parameters:
+      package: Microsoft.VisualStudioCode
+
+  - name: winget
+    description: Install Neovim
+    parameters:
+      package: Neovim.Neovim
+
+  - name: winget
+    description: Install Node.js LTS
+    parameters:
+      package: OpenJS.NodeJS.LTS
+
+  - name: winget
+    description: Install PowerShell
+    parameters:
+      package: Microsoft.PowerShell
+
+  - name: winget
+    description: Install PowerToys
+    parameters:
+      package: Microsoft.PowerToys
+
+  - name: winget
+    description: Install Python 3.13
+    parameters:
+      package: Python.Python.3.13
+
+  - name: winget
+    description: Install Windows Subsystem for Linux
+    parameters:
+      package: Microsoft.WSL
