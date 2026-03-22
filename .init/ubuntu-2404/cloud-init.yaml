@@ -1,0 +1,34 @@
+#cloud-config
+package_update: true
+package_upgrade: false
+
+packages:
+  - git
+  - curl
+  - ca-certificates
+
+write_files:
+  - path: /usr/local/bin/bootstrap-ubuntu.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      REPO_URL="${DOTFILES_REPO_URL:-https://github.com/your-org/dotfiles.git}"
+      BRANCH="${DOTFILES_REPO_BRANCH:-main}"
+      WORKDIR="/opt/dotfiles"
+
+      if [[ ! -d "${WORKDIR}/.git" ]]; then
+        git clone --depth 1 --branch "${BRANCH}" "${REPO_URL}" "${WORKDIR}"
+      else
+        git -C "${WORKDIR}" fetch --depth 1 origin "${BRANCH}"
+        git -C "${WORKDIR}" checkout "${BRANCH}"
+        git -C "${WORKDIR}" reset --hard "origin/${BRANCH}"
+      fi
+
+      bash "${WORKDIR}/.init/common/bootstrap-ubuntu.sh" cloud
+
+runcmd:
+  - [bash, -lc, "/usr/local/bin/bootstrap-ubuntu.sh"]
+
+final_message: "cloud-init complete: Ubuntu dev tooling bootstrap finished."
