@@ -58,6 +58,16 @@ tasks:
       package: Python.Python.3.13
 
   - name: winget
+    description: Install Windows Terminal
+    parameters:
+      package: Microsoft.WindowsTerminal
+
+  - name: winget
     description: Install Windows Subsystem for Linux
     parameters:
       package: Microsoft.WSL
+
+  - name: winget
+    description: Install Ubuntu
+    parameters:
+      package: Canonical.Ubuntu 
