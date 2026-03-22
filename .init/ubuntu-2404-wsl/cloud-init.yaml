@@ -3,8 +3,8 @@ package_update: true
 package_upgrade: false
 
 users:
-  - name: dev
-    gecos: Dev User
+  - name: __WSL_USERNAME__
+    gecos: __WSL_GECOS__
     groups: [adm, sudo, audio, video, plugdev, netdev]
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
@@ -21,7 +21,7 @@ write_files:
     permissions: "0644"
     content: |
       [user]
-      default=dev
+      default=__WSL_USERNAME__
 
   - path: /usr/local/bin/bootstrap-ubuntu-wsl.sh
     permissions: "0755"
@@ -30,15 +30,23 @@ write_files:
       #!/usr/bin/env bash
       set -euo pipefail
 
-      WSL_USERNAME="dev"
-      REPO_URL="${DOTFILES_REPO_URL:-https://github.com/mramiro/dotfiles.git}"
-      BRANCH="${DOTFILES_REPO_BRANCH:-master}"
+      WSL_USERNAME="__WSL_USERNAME__"
+      REPO_URL="__DOTFILES_REPO_URL__"
+      BRANCH="__DOTFILES_REPO_BRANCH__"
       USER_HOME="/home/${WSL_USERNAME}"
       WORKDIR="${USER_HOME}/dotfiles"
 
-      su -l "${WSL_USERNAME}" -c "set -euo pipefail; if [[ ! -d '${WORKDIR}/.git' ]]; then git clone --depth 1 --branch '${BRANCH}' '${REPO_URL}' '${WORKDIR}'; else git -C '${WORKDIR}' fetch --depth 1 origin '${BRANCH}'; git -C '${WORKDIR}' checkout '${BRANCH}'; git -C '${WORKDIR}' reset --hard 'origin/${BRANCH}'; fi; bash '${WORKDIR}/.init/common/bootstrap-ubuntu.sh' wsl"
+      if [[ ! -d "${WORKDIR}/.git" ]]; then
+        git clone --depth 1 --branch "${BRANCH}" "${REPO_URL}" "${WORKDIR}"
+      else
+        git -C "${WORKDIR}" fetch --depth 1 origin "${BRANCH}"
+        git -C "${WORKDIR}" checkout "${BRANCH}"
+        git -C "${WORKDIR}" reset --hard "origin/${BRANCH}"
+      fi
+
+      bash "${WORKDIR}/.init/common/bootstrap-ubuntu.sh" wsl
 
 runcmd:
-  - [bash, -lc, "/usr/local/bin/bootstrap-ubuntu-wsl.sh"]
+  - [su, -l, __WSL_USERNAME__, -c, /usr/local/bin/bootstrap-ubuntu-wsl.sh]
 
 final_message: "cloud-init complete: Ubuntu WSL tooling bootstrap finished."

@@ -98,9 +98,18 @@ ensure_docker_repo() {
 
 install_common_packages() {
   install_if_missing \
-    git jq neovim unzip \
     python3 python3-pip \
     build-essential
+}
+
+install_utils() {
+  install_if_missing \
+    htop tmux tree \
+    net-tools iputils-ping \
+    pass pwgen \
+    fish fzf \
+    git jq neovim \
+    unzip
 }
 
 install_microsoft_tools() {
@@ -138,6 +147,7 @@ main() {
   run_root apt-get update -y
 
   install_common_packages
+  install_utils
   install_microsoft_tools
   install_node
   install_docker

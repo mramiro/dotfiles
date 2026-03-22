@@ -43,15 +43,22 @@ Before use, update repo defaults in that file:
 
 ### 3) WSL Ubuntu
 
-Use `.init/ubuntu-2404-wsl/cloud-init.yaml` with your WSL cloud-init flow.
+Use `.init/ubuntu-2404-wsl/cloud-init.yaml` as a tokenized template.
 
-Before use, update repo defaults in that file:
+Render it into `~/.cloud-init/Ubuntu-24.04.user-data` on Windows:
 
-- `DOTFILES_REPO_URL`
-- `DOTFILES_REPO_BRANCH`
+```powershell
+powershell -ExecutionPolicy Bypass -File .init/ubuntu-2404-wsl/render-user-data.ps1 -UserName miramiro -Gecos "Mira Miro" -RepoUrl "https://github.com/mramiro/dotfiles.git" -Branch master
+```
 
-By default, this config creates a `dev` user, sets it as the WSL default user via `/etc/wsl.conf`, and runs bootstrap as that user.
-If you prefer a different username, change `WSL_USERNAME` in `.init/ubuntu-2404-wsl/cloud-init.yaml`.
+Renderer inputs:
+
+- `UserName`
+- `Gecos`
+- `RepoUrl`
+- `Branch`
+
+This keeps WSL-first cloud-init syntax while still allowing full username parameterization.
 
 ## Notes
 
