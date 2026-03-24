@@ -11,10 +11,10 @@ if uname -a | grep "Microsoft" > /dev/null
     # WSL 1 needs a dedicated XServer running in Windows
     set -x DISPLAY localhost:0.0
     set -x DOCKER_HOST tcp://localhost:2375
-else if uname -a | grep "microsoft-standard" > /dev/null; and not which wslg.exe > /dev/null
-    # Old versions of WSL 2 (without WSLg) also need an XServer, but the Windows host has its own IP
-    set -x DISPLAY (cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)":0.0"
-    set -x LIBGL_ALWAYS_INDIRECT 1
+# else if uname -a | grep "microsoft-standard" > /dev/null; and not which wslg.exe > /dev/null
+#     # Old versions of WSL 2 (without WSLg) also need an XServer, but the Windows host has its own IP
+#     set -x DISPLAY (cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)":0.0"
+#     set -x LIBGL_ALWAYS_INDIRECT 1
 end
 
 # set PATH so it includes user's private bin if it exists
