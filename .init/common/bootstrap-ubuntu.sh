@@ -113,7 +113,10 @@ install_utils() {
 }
 
 install_microsoft_tools() {
-  install_if_missing azure-cli powershell code dotnet-sdk-9.0
+  install_if_missing azure-cli powershell dotnet-sdk-9.0
+  if [[ "${TARGET}" != "wsl" ]]; then
+    install_if_missing code
+  fi
 }
 
 install_node() {
