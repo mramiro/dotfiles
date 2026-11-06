@@ -11,6 +11,28 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Assert-CommandAvailable {
+  param(
+    [Parameter(Mandatory)][String]$Name
+  )
+
+  if (-not (Get-Command -Name $Name -ErrorAction SilentlyContinue)) {
+    throw "Required command '$Name' was not found in PATH."
+  }
+}
+
+function Invoke-NativeCommand {
+  param(
+    [Parameter(Mandatory)][String]$Command,
+    [Parameter(Mandatory)][String[]]$Arguments
+  )
+
+  & $Command @Arguments
+  if ($LASTEXITCODE -ne 0) {
+    throw "Command '$Command' failed with exit code $LASTEXITCODE."
+  }
+}
+
 function Get-TempFilePath {
   $tmpPath = [IO.Path]::GetTempFileName()
   Remove-Item -Path $tmpPath -Force
@@ -59,11 +81,15 @@ function Expand-Jar($jarPath, $targetDirectory) {
       New-Item -ItemType Directory -Path $targetDirectory | Out-Null
     }
     "Extracting $jarPath to $targetDirectory" | Write-Verbose
-    Set-Location -Path $targetDirectory
-    if ($OnlyMetadata) {
-      jar -xf $jarPath "META-INF"
-    } else {
-      jar -xf $jarPath
+    Push-Location -Path $targetDirectory
+    try {
+      if ($OnlyMetadata) {
+        Invoke-NativeCommand -Command "jar" -Arguments @("-xf", $jarPath, "META-INF")
+      } else {
+        Invoke-NativeCommand -Command "jar" -Arguments @("-xf", $jarPath)
+      }
+    } finally {
+      Pop-Location
     }
     Get-Item $targetDirectory
   } else {
@@ -121,15 +147,19 @@ if ($Projects.Count -gt 0) {
   $mvnOpts += @("-pl", ($Projects -join ","))
 }
 
+Assert-CommandAvailable -Name "mvn"
+Assert-CommandAvailable -Name "jar"
+
 if ($Rebuild) {
   "Rebuilding project" | Write-Host
-  mvn @mvnOpts clean package -DskipTests | Write-Host
+  Invoke-NativeCommand -Command "mvn" -Arguments ($mvnOpts + @("clean", "package", "-DskipTests"))
 }
 
 $startingDirectory = Get-Location
+$tmpFilePath = $null
 try {
   $tmpFilePath = Get-TempFilePath
-  mvn @mvnOpts help:effective-pom -Doutput="$tmpFilePath" | Write-Host
+  Invoke-NativeCommand -Command "mvn" -Arguments ($mvnOpts + @("help:effective-pom", "-Doutput=$tmpFilePath"))
   "Effective POM written to $tmpFilePath" | Write-Verbose
   $dom = [xml](Get-Content -Raw -Path $tmpFilePath)
 
@@ -146,4 +176,3 @@ try {
     Remove-Item -Path $tmpFilePath -Force
   }
 }
-
