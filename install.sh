@@ -19,17 +19,19 @@ while getopts ":nfs" opt; do
       echo "Invalid option $opt" >&2
       ;;
   esac
-  shift $((OPTIND-1))
 done
+shift $((OPTIND - 1))
 
 srcFolder=${1:?"Must provide source folder"}
-# Remove trailing slash if present
-srcFolder=$(basename "$srcFolder")
+srcFolder=$(cd "$srcFolder" 2>/dev/null && pwd -P) || {
+  echo "Source folder does not exist: $1" >&2
+  exit 1
+}
 
 while IFS= read -r -d $'\0' leaf; do
-  file=$(echo $leaf | sed "s#^$srcFolder/##")
-  srcFile=$(realpath $leaf)
-  targetFile="$HOME/"$(echo $leaf | sed "s#^$srcFolder/##")
+  file=${leaf#"$srcFolder"/}
+  srcFile=$leaf
+  targetFile="$HOME/$file"
   # Check for existing file
   if [ -f "$targetFile" ]; then
     if $force; then
@@ -43,7 +45,7 @@ while IFS= read -r -d $'\0' leaf; do
     fi
   fi
   # Check for existing (broken) link
-  if [ -h "$targetFile" ]; then
+  if [ -L "$targetFile" ]; then
     if $force; then
       echo "Removing existing link: $targetFile"
       if $shouldAct; then
@@ -54,14 +56,18 @@ while IFS= read -r -d $'\0' leaf; do
       continue
     fi
   fi
-  message=$($symlinks && echo "Creating symlink" || echo "Copying file")
+  if $symlinks; then
+    message="Creating symlink"
+  else
+    message="Copying file"
+  fi
   echo "$message: $targetFile -> $srcFile"
   if $shouldAct; then
-    mkdir -p $(dirname "$targetFile")
+    mkdir -p "$(dirname "$targetFile")"
     if $symlinks; then
       ln -s "$srcFile" "$targetFile"
     else
       cp "$srcFile" "$targetFile"
     fi
   fi
-done < <(find -L $srcFolder -type f -print0)
+done < <(find -L "$srcFolder" -type f -print0)

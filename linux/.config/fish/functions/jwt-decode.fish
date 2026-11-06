@@ -11,4 +11,3 @@ function jwt-decode
         echo $jwt | cut -d. -f2 | base64 --decode | jq
     end
 end
-
