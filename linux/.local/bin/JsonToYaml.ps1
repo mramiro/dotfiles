@@ -38,8 +38,6 @@
     > ./JsonToYaml.ps1 -From JSON -InputPath ./mySettings -OutputPath ./myNewSettings -Recurse
 #>
 
-using module powershell-yaml
-
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [Parameter(Mandatory=$true)]$InputPath,
@@ -51,6 +49,17 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+try {
+    Import-Module -Name powershell-yaml -ErrorAction Stop
+} catch {
+    throw "Required PowerShell module 'powershell-yaml' is not installed. Install it with: Install-Module powershell-yaml -Scope CurrentUser"
+}
+
+if (-not (Get-Command ConvertTo-Yaml -ErrorAction SilentlyContinue) -or
+    -not (Get-Command ConvertFrom-Yaml -ErrorAction SilentlyContinue)) {
+    throw "The 'powershell-yaml' module is installed but its YAML conversion commands are unavailable."
+}
 
 function IsDirectory($path) {
     if ($path -is [System.IO.DirectoryInfo]) {
@@ -87,11 +96,13 @@ function WriteToFile($path, $str) {
         Write-Warning "Not writing to $path because it already exists. Use Force to override."
     } else {
         Write-Verbose "Saving string to $path..."
-        $str | Set-Content -Path $path
+        if ($PSCmdlet.ShouldProcess($path, "Write converted content")) {
+            $str | Set-Content -Path $path -Encoding utf8
+        }
     }
 }
 
-$sourceItem = Get-Item $InputPath
+$sourceItem = Get-Item -LiteralPath $InputPath -ErrorAction Stop
 if ($Recurse) {
     $sourceFolder = $sourceItem
     if (-not (IsDirectory $sourceFolder)) {
@@ -100,9 +111,16 @@ if ($Recurse) {
     if ($OutputPath -eq $null) {
         Write-Error "Invalid argument. Recurse option requires a valid OutputPath. Value provided: $OutputPath"
     }
-    $outputFolder = Get-Item $OutputPath
-    if (-not (isDirectory $outputFolder)) {
-        Write-Error "Invalid argument. OutputPath must be a directory when using Recurse option. Value provided: $OutputPath"
+    if (Test-Path -LiteralPath $OutputPath) {
+        $outputFolder = Get-Item -LiteralPath $OutputPath
+        if (-not (IsDirectory $outputFolder)) {
+            Write-Error "Invalid argument. OutputPath must be a directory when using Recurse option. Value provided: $OutputPath"
+        }
+    } else {
+        if (-not $PSCmdlet.ShouldProcess($OutputPath, "Create output directory")) {
+            Write-Error "Invalid argument. Recurse output directory does not exist: $OutputPath"
+        }
+        $outputFolder = New-Item -ItemType Directory -Path $OutputPath -Force
     }
     Write-Verbose "Reading folder $sourceFolder..."
     $filter = if ($RecurseFilter -eq "") {
@@ -128,7 +146,9 @@ if ($Recurse) {
         # Create folder hierarchy if it doesn't exist already
         if (-not (Test-Path -Path $targetPathFolder)) {
             Write-Verbose "Directory $targetPathFolder. Creating recursively..."
-            New-Item -ItemType Directory -Path $targetPathFolder.Parent -Name $targetPathFolder.BaseName -Force | Out-Null
+            if ($PSCmdlet.ShouldProcess($targetPathFolder, "Create target directory")) {
+                New-Item -ItemType Directory -Path $targetPathFolder -Force | Out-Null
+            }
         }
         WriteToFile $targetPath $convertedString
     }

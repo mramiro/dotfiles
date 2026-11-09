@@ -10,7 +10,11 @@ set showcmd
 set updatetime=500
 set number
 set listchars=tab:▸\ ,eol:¬,space:·
-set clipboard=unnamedplus
+if has('mac') || has('macunix')
+  set clipboard=unnamed
+else
+  set clipboard=unnamedplus
+endif
 set foldmethod=syntax
 set foldlevelstart=10
 

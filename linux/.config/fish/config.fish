@@ -19,16 +19,15 @@ end
 
 # set PATH so it includes user's private bin if it exists
 if test -d "$HOME/bin"
-    set -x PATH "$HOME/bin:$PATH"
+    fish_add_path -g "$HOME/bin"
 end
 
-# set PATH so it includes user's private bin if it exists
 if test -d "$HOME/.local/bin"
-    set -x PATH "$HOME/.local/bin:$PATH"
+    fish_add_path -g "$HOME/.local/bin"
 end
 
 if test -d "$HOME/.local/share/coursier/bin"
-    set -x PATH "$HOME/.local/share/coursier/bin:$PATH"
+    fish_add_path -g "$HOME/.local/share/coursier/bin"
 end
 
 # dotnet installation is messed up in jammy (only dotnet6 is supported):
@@ -39,15 +38,25 @@ end
 # end
 
 if test -d "$HOME/.dotnet/tools"
-    set -x PATH "$HOME/.dotnet/tools:$PATH"
+    fish_add_path -g "$HOME/.dotnet/tools"
 end
 
 # Homebrew
-if [ -f /home/linuxbrew/.linuxbrew/bin/brew ]
+if test -x /opt/homebrew/bin/brew
+  eval (/opt/homebrew/bin/brew shellenv)
+else if test -x /usr/local/bin/brew
+  eval (/usr/local/bin/brew shellenv)
+else if test -x /home/linuxbrew/.linuxbrew/bin/brew
   eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 end
 
-set -x JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+if test (uname) = Darwin
+  if test -x /usr/libexec/java_home
+    set -gx JAVA_HOME (/usr/libexec/java_home 2>/dev/null)
+  end
+else if test -x /usr/lib/jvm/java-8-openjdk-amd64/bin/java
+  set -gx JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+end
 
 # set -x HADOOP_HOME /opt/apache/hadoop-3.3.1
 # set -x HADOOP_CONF_DIR "$HADOOP_HOME/etc/hadoop"
@@ -71,4 +80,6 @@ end
 
 fish_vi_key_bindings
 
-set -x GCM_CREDENTIAL_STORE secretservice
+if not test (uname) = Darwin
+  set -gx GCM_CREDENTIAL_STORE secretservice
+end
