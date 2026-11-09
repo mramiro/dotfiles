@@ -43,17 +43,7 @@ log() {
 }
 
 function trim_string() {
-  echo $1 | sed 's/^[[:space:]]*//g;s/[[:space:]]*$//g'
-}
-
-function exec_cmd() {
-  cmd=${1:?"Missing argument: cmd"}
-  dry_run=${2:-false}
-  if $dry_run; then
-    log "[DRYRUN]: $cmd"
-  else
-    eval "$cmd"
-  fi
+  printf '%s' "$1" | sed 's/^[[:space:]]*//g;s/[[:space:]]*$//g'
 }
 
 include_remotes=false
@@ -75,35 +65,68 @@ while getopts ':f:rn' flag; do
 done
 shift $((OPTIND -1))
 
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  die "Not inside a Git repository"
+fi
+
 current_branch=${1:-master}
-# current_branch=$(git rev-parse --abbrev-ref HEAD)
+if ! git show-ref --verify --quiet "refs/heads/$current_branch"; then
+  die "Local branch '$current_branch' does not exist"
+fi
 
 log "Switching to branch: $current_branch"
-git checkout $current_branch
+if $dry_run; then
+  log "[DRYRUN]: git checkout $current_branch"
+else
+  git checkout "$current_branch"
+fi
 echo "Deleting local branches already merged to $current_branch..."
-branches=$(git branch --merged | sed "/$current_branch/d")
-for branch in $branches; do
-  exec_cmd "git branch -d $branch" $dry_run
-done
+while IFS= read -r branch; do
+  [ -n "$branch" ] || continue
+  [ "$branch" = "$current_branch" ] && continue
+  if $dry_run; then
+    log "[DRYRUN]: git branch -d -- $branch"
+  else
+    git branch -d -- "$branch"
+  fi
+done < <(git for-each-ref --merged="$current_branch" --format='%(refname:short)' refs/heads)
 
 if $include_remotes; then
   log "Pulling latest changes into $current_branch"
-  git pull
+  if $dry_run; then
+    log "[DRYRUN]: git pull"
+  else
+    git pull
+  fi
   log "Pruning stale branches in remotes..."
-  for remote in $(git remote); do
-    exec_cmd "git remote prune $remote" $dry_run
-  done
+  while IFS= read -r remote; do
+    [ -n "$remote" ] || continue
+    if $dry_run; then
+      log "[DRYRUN]: git remote prune $remote"
+    else
+      git remote prune "$remote"
+    fi
+  done < <(git remote)
   log "Deleting remote branches already merged to $current_branch..."
-  branches=$(git branch --remotes --merged | sed "/origin\\/HEAD/d;/origin\\/$current_branch/d")
-  for branch in $branches; do
-    remote=$(trim_string $branch | cut -d / -f 1)
-    branch_name=$(trim_string $branch | cut -d / -f 2-)
-    if test -n "$filter" && ! echo $branch_name | grep -E "$filter" 1>/dev/null; then
+  while IFS= read -r branch; do
+    branch=$(trim_string "$branch")
+    [ -n "$branch" ] || continue
+    remote=${branch%%/*}
+    branch_name=${branch#*/}
+    [ "$branch_name" != "$current_branch" ] || continue
+    if [ "$branch_name" = "HEAD" ]; then
+      continue
+    fi
+    if test -n "$filter" && ! printf '%s' "$branch_name" | grep -E "$filter" >/dev/null; then
       continue
     fi
     if test "$branch_name" = "master" || test "$branch_name" = "main"; then
       continue
     fi
-    exec_cmd "git push --delete $remote $branch_name" $dry_run
-  done
+    if $dry_run; then
+      log "[DRYRUN]: git push --delete $remote $branch_name"
+    else
+      git push --delete "$remote" "$branch_name"
+    fi
+  done < <(git for-each-ref --merged="$current_branch" --format='%(refname:short)' refs/remotes)
 fi
