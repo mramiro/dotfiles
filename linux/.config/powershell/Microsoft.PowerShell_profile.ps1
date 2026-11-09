@@ -209,8 +209,17 @@ function Expand-Property {
 if (Test-Path -Type Container -Path "~/.local/bin") {
   $localBin = (Resolve-Path -Path "~/.local/bin").Path
   $separator = [IO.Path]::PathSeparator
-  if (-not $Env:Path.Split($separator).Contains($localBin)) {
-    $Env:Path = "{0}{1}{2}" -f $Env:Path, $separator, $localBin
+  $pathEntries = if ([string]::IsNullOrEmpty($Env:Path)) {
+    @()
+  } else {
+    $Env:Path -split [regex]::Escape([string]$separator)
+  }
+  if ($localBin -notin $pathEntries) {
+    if ([string]::IsNullOrEmpty($Env:Path)) {
+      $Env:Path = $localBin
+    } else {
+      $Env:Path = "{0}{1}{2}" -f $Env:Path, $separator, $localBin
+    }
   }
 }
 
